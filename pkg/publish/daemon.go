@@ -41,7 +41,7 @@ func NewDaemon(namer Namer, tags []string) Interface {
 }
 
 // Publish implements publish.Interface
-func (d *demon) Publish(img v1.Image, s string) (name.Reference, error) {
+func (d *demon) Publish(img v1.Image, packageName, s string) (name.Reference, error) {
 	// https://github.com/google/go-containerregistry/issues/212
 	s = strings.ToLower(s)
 
@@ -50,7 +50,7 @@ func (d *demon) Publish(img v1.Image, s string) (name.Reference, error) {
 		return nil, err
 	}
 
-	digestTag, err := name.NewTag(fmt.Sprintf("%s/%s:%s", LocalDomain, d.namer(s), h.Hex))
+	digestTag, err := name.NewTag(fmt.Sprintf("%s/%s:%s", LocalDomain, d.namer(packageName), h.Hex))
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +63,7 @@ func (d *demon) Publish(img v1.Image, s string) (name.Reference, error) {
 
 	for _, tagName := range d.tags {
 		log.Printf("Adding tag %v", tagName)
-		tag, err := name.NewTag(fmt.Sprintf("%s/%s:%s", LocalDomain, d.namer(s), tagName))
+		tag, err := name.NewTag(fmt.Sprintf("%s/%s:%s", LocalDomain, d.namer(packageName), tagName))
 		if err != nil {
 			return nil, err
 		}

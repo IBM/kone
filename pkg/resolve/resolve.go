@@ -20,17 +20,17 @@ import (
 	"io"
 	"sync"
 
-	"github.com/google/ko/pkg/build"
-	"github.com/google/ko/pkg/publish"
+	"github.com/ibm/kone/pkg/build"
+	"github.com/ibm/kone/pkg/publish"
 	"golang.org/x/sync/errgroup"
 	yaml "gopkg.in/yaml.v2"
 )
 
 // ImageReferences resolves supported references to images within the input yaml
 // to published image digests.
-func ImageReferences(input []byte, builder build.Interface, publisher publish.Interface) ([]byte, error) {
+func ImageReferences(basepath string, input []byte, builder build.Interface, publisher publish.Interface) ([]byte, error) {
 	// First, walk the input objects and collect a list of supported references
-	refs := make(map[string]struct{})
+	refs := make(map[string]string)
 	// The loop is to support multi-document yaml files.
 	// This is handled by using a yaml.Decoder and reading objects until io.EOF, see:
 	// https://github.com/go-yaml/yaml/blob/v2.2.1/yaml.go#L124
@@ -45,8 +45,9 @@ func ImageReferences(input []byte, builder build.Interface, publisher publish.In
 		}
 		// This simply returns the replaced object, which we discard during the gathering phase.
 		if _, err := replaceRecursive(obj, func(ref string) (string, error) {
-			if builder.IsSupportedReference(ref) {
-				refs[ref] = struct{}{}
+			packageName := builder.IsSupportedReference(basepath, ref)
+			if packageName != nil {
+				refs[ref] = *packageName
 			}
 			return ref, nil
 		}); err != nil {
@@ -57,14 +58,14 @@ func ImageReferences(input []byte, builder build.Interface, publisher publish.In
 	// Next, perform parallel builds for each of the supported references.
 	var sm sync.Map
 	var errg errgroup.Group
-	for ref := range refs {
+	for ref, packageName := range refs {
 		ref := ref
 		errg.Go(func() error {
-			img, err := builder.Build(ref)
+			img, err := builder.Build(basepath, ref)
 			if err != nil {
 				return err
 			}
-			digest, err := publisher.Publish(img, ref)
+			digest, err := publisher.Publish(img, packageName, ref)
 			if err != nil {
 				return err
 			}
@@ -90,7 +91,8 @@ func ImageReferences(input []byte, builder build.Interface, publisher publish.In
 		}
 		// Recursively walk input, replacing supported reference with our computed digests.
 		obj2, err := replaceRecursive(obj, func(ref string) (string, error) {
-			if !builder.IsSupportedReference(ref) {
+			packageName := builder.IsSupportedReference(basepath, ref)
+			if packageName == nil {
 				return ref, nil
 			}
 			if val, ok := sm.Load(ref); ok {

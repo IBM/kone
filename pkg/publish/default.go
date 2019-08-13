@@ -28,11 +28,11 @@ import (
 
 // defalt is intentionally misspelled to avoid keyword collision (and drive Jon nuts).
 type defalt struct {
-	base  string
-	t     http.RoundTripper
-	auth  authn.Authenticator
-	namer Namer
-	tags  []string
+	base     string
+	t        http.RoundTripper
+	auth     authn.Authenticator
+	namer    Namer
+	tags     []string
 	insecure bool
 }
 
@@ -40,23 +40,25 @@ type defalt struct {
 type Option func(*defaultOpener) error
 
 type defaultOpener struct {
-	base  string
-	t     http.RoundTripper
-	auth  authn.Authenticator
-	namer Namer
-	tags  []string
+	base     string
+	t        http.RoundTripper
+	auth     authn.Authenticator
+	namer    Namer
+	tags     []string
 	insecure bool
 }
 
-// Namer is a function from a supported import path to the portion of the resulting
+// Namer is a function from a supported to the portion of the resulting
 // image name that follows the "base" repository name.
 type Namer func(string) string
 
-// identity is the default namer, so import paths are affixed as-is under the repository
+// identity is the default namer, so paths are affixed as-is under the repository
 // name for maximum clarity, e.g.
-//   gcr.io/foo/github.com/bar/baz/cmd/blah
-//   ^--base--^ ^-------import path-------^
-func identity(in string) string { return in }
+//   gcr.io/foo/<node-package-name>
+//   ^--base--^ ^--package name--^
+func identity(packageName string) string {
+	return packageName
+}
 
 // As some registries do not support pushing an image by digest, the default tag for pushing
 // is the 'latest' tag.
@@ -93,7 +95,7 @@ func NewDefault(base string, options ...Option) (Interface, error) {
 }
 
 // Publish implements publish.Interface
-func (d *defalt) Publish(img v1.Image, s string) (name.Reference, error) {
+func (d *defalt) Publish(img v1.Image, packageName, s string) (name.Reference, error) {
 	// https://github.com/google/go-containerregistry/issues/212
 	s = strings.ToLower(s)
 
@@ -103,7 +105,7 @@ func (d *defalt) Publish(img v1.Image, s string) (name.Reference, error) {
 		if d.insecure {
 			os = []name.Option{name.Insecure}
 		}
-		tag, err := name.NewTag(fmt.Sprintf("%s/%s:%s", d.base, d.namer(s), tagName), os...)
+		tag, err := name.NewTag(fmt.Sprintf("%s/%s:%s", d.base, d.namer(packageName), tagName), os...)
 		if err != nil {
 			return nil, err
 		}
@@ -120,7 +122,7 @@ func (d *defalt) Publish(img v1.Image, s string) (name.Reference, error) {
 	if err != nil {
 		return nil, err
 	}
-	dig, err := name.NewDigest(fmt.Sprintf("%s/%s@%s", d.base, d.namer(s), h))
+	dig, err := name.NewDigest(fmt.Sprintf("%s/%s@%s", d.base, d.namer(packageName), h))
 	if err != nil {
 		return nil, err
 	}

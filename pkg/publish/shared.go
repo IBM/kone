@@ -50,7 +50,7 @@ func NewCaching(inner Interface) (Interface, error) {
 }
 
 // Publish implements Interface
-func (c *caching) Publish(img v1.Image, ref string) (name.Reference, error) {
+func (c *caching) Publish(img v1.Image, basepath, ref string) (name.Reference, error) {
 	f := func() *future {
 		// Lock the map of futures.
 		c.m.Lock()
@@ -66,7 +66,7 @@ func (c *caching) Publish(img v1.Image, ref string) (name.Reference, error) {
 		}
 		// Otherwise create and record a future for publishing "img" to "ref".
 		f := newFuture(func() (name.Reference, error) {
-			return c.inner.Publish(img, ref)
+			return c.inner.Publish(img, basepath, ref)
 		})
 		c.results[ref] = &entry{img: img, f: f}
 		return f

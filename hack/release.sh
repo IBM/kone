@@ -22,9 +22,9 @@
 
 VERSION=$1
 
-KO_ROOT="$(cd "$(dirname "$0")" && pwd)/.."
+KONE_ROOT="$(cd "$(dirname "$0")" && pwd)/.."
 
 go get github.com/ahmetb/govvv
-govvv build -o $KO_ROOT/build/ko $KO_ROOT/cmd/ko -pkg github.com/google/ko/pkg/commands -version $VERSION
+govvv build -o $KONE_ROOT/build/kone $KONE_ROOT/cmd/kone -pkg github.com/ibm/kone/pkg/commands -version $VERSION
 git tag $VERSION
 git push origin $VERSION

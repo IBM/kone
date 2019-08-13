@@ -36,8 +36,8 @@ func AddFileArg(cmd *cobra.Command, fo *FilenameOptions) {
 		"Filename, directory, or URL to files to use to create the resource")
 	cmd.Flags().BoolVarP(&fo.Recursive, "recursive", "R", fo.Recursive,
 		"Process the directory used in -f, --filename recursively. Useful when you want to manage related manifests organized within the same directory.")
-	cmd.Flags().BoolVarP(&fo.Watch, "watch", "W", fo.Watch,
-		"Continuously monitor the transitive dependencies of the passed yaml files, and redeploy whenever anything changes.")
+	//cmd.Flags().BoolVarP(&fo.Watch, "watch", "W", fo.Watch,
+	//		"Continuously monitor the transitive dependencies of the passed yaml files, and redeploy whenever anything changes.")
 }
 
 // Based heavily on pkg/kubectl

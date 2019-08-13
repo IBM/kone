@@ -1,4 +1,4 @@
-module github.com/google/ko
+module github.com/ibm/kone
 
 go 1.12
 

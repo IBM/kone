@@ -19,7 +19,7 @@ import (
 	"encoding/hex"
 	"path/filepath"
 
-	"github.com/google/ko/pkg/publish"
+	"github.com/ibm/kone/pkg/publish"
 	"github.com/spf13/cobra"
 )
 
@@ -32,16 +32,16 @@ type NameOptions struct {
 }
 
 func AddNamingArgs(cmd *cobra.Command, no *NameOptions) {
-	cmd.Flags().BoolVarP(&no.PreserveImportPaths, "preserve-import-paths", "P", no.PreserveImportPaths,
-		"Whether to preserve the full import path after KO_DOCKER_REPO.")
-	cmd.Flags().BoolVarP(&no.BaseImportPaths, "base-import-paths", "B", no.BaseImportPaths,
-		"Whether to use the base path without MD5 hash after KO_DOCKER_REPO.")
+	// cmd.Flags().BoolVarP(&no.PreserveImportPaths, "preserve-import-paths", "P", no.PreserveImportPaths,
+	// 	"Whether to preserve the full import path after KO_DOCKER_REPO.")
+	// cmd.Flags().BoolVarP(&no.BaseImportPaths, "base-import-paths", "B", no.BaseImportPaths,
+	// 	"Whether to use the base path without MD5 hash after KO_DOCKER_REPO.")
 }
 
-func packageWithMD5(importpath string) string {
+func packageWithMD5(packageName string) string {
 	hasher := md5.New()
-	hasher.Write([]byte(importpath))
-	return filepath.Base(importpath) + "-" + hex.EncodeToString(hasher.Sum(nil))
+	hasher.Write([]byte(packageName))
+	return filepath.Base(packageName) + "-" + hex.EncodeToString(hasher.Sum(nil))
 }
 
 func preserveImportPath(importpath string) string {

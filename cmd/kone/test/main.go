@@ -15,24 +15,18 @@
 package main
 
 import (
-	"github.com/google/ko/pkg/commands"
+	"io/ioutil"
 	"log"
-
-	"github.com/spf13/cobra"
+	"os"
+	"path/filepath"
 )
 
 func main() {
-	// Parent command to which all subcommands are added.
-	cmds := &cobra.Command{
-		Use:   "ko",
-		Short: "Rapidly iterate with Go, Containers, and Kubernetes.",
-		Run: func(cmd *cobra.Command, args []string) {
-			cmd.Help()
-		},
+	dp := os.Getenv("KONE_DATA_PATH")
+	file := filepath.Join(dp, "kenobi")
+	bytes, err := ioutil.ReadFile(file)
+	if err != nil {
+		log.Fatalf("Error reading %q: %v", file, err)
 	}
-	commands.AddKubeCommands(cmds)
-
-	if err := cmds.Execute(); err != nil {
-		log.Fatalf("error during command execution: %v", err)
-	}
+	log.Printf(string(bytes))
 }

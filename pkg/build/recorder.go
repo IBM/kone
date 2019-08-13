@@ -15,32 +15,33 @@
 package build
 
 import (
+	"path/filepath"
 	"sync"
 
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 )
 
-// Recorder composes with another Interface to record the built import paths.
+// Recorder composes with another Interface to record the built nodejs apps.
 type Recorder struct {
-	m           sync.Mutex
-	ImportPaths []string
-	Builder     Interface
+	m       sync.Mutex
+	Paths   []string
+	Builder Interface
 }
 
 // Recorder implements Interface
 var _ Interface = (*Recorder)(nil)
 
 // IsSupportedReference implements Interface
-func (r *Recorder) IsSupportedReference(ip string) bool {
-	return r.Builder.IsSupportedReference(ip)
+func (r *Recorder) IsSupportedReference(base, dir string) *string {
+	return r.Builder.IsSupportedReference(base, dir)
 }
 
 // Build implements Interface
-func (r *Recorder) Build(ip string) (v1.Image, error) {
+func (r *Recorder) Build(base, dir string) (v1.Image, error) {
 	func() {
 		r.m.Lock()
 		defer r.m.Unlock()
-		r.ImportPaths = append(r.ImportPaths, ip)
+		r.Paths = append(r.Paths, filepath.Join(base, dir))
 	}()
-	return r.Builder.Build(ip)
+	return r.Builder.Build(base, dir)
 }

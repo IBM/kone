@@ -19,7 +19,7 @@ import (
 	"os"
 	"os/exec"
 
-	"github.com/google/ko/pkg/commands/options"
+	"github.com/ibm/kone/pkg/commands/options"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"k8s.io/kubernetes/pkg/kubectl/genericclioptions"

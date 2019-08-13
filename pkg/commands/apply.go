@@ -19,7 +19,7 @@ import (
 	"os"
 	"os/exec"
 
-	"github.com/google/ko/pkg/commands/options"
+	"github.com/ibm/kone/pkg/commands/options"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"k8s.io/kubernetes/pkg/kubectl/genericclioptions"
@@ -126,10 +126,10 @@ func addApply(topLevel *cobra.Command) {
 		},
 	}
 	options.AddLocalArg(apply, lo)
-	options.AddNamingArgs(apply, no)
+	//options.AddNamingArgs(apply, no)
 	options.AddFileArg(apply, fo)
 	options.AddTagsArg(apply, ta)
-	options.AddDebugArg(apply, do)
+	//options.AddDebugArg(apply, do)
 	options.AddSelectorArg(apply, so)
 
 	// Collect the ko-specific apply flags before registering the kubectl global

@@ -18,14 +18,13 @@ import (
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 )
 
-// Interface abstracts different methods for turning a supported importpath
+// Interface abstracts different methods for turning a supported filepath
 // reference into a v1.Image.
 type Interface interface {
-	// IsSupportedReference determines whether the given reference is to an importpath reference
-	// that Ko supports building.
-	// TODO(mattmoor): Verify that some base repo: foo.io/bar can be suffixed with this reference and parsed.
-	IsSupportedReference(string) bool
+	// IsSupportedReference determines whether the given reference is to an filepath reference
+	// that Kone supports building. Return the nodejs package name if supported.
+	IsSupportedReference(base, s string) *string
 
-	// Build turns the given importpath reference into a v1.Image containing the Go binary.
-	Build(string) (v1.Image, error)
+	// Build turns the given filepath reference into a v1.Image containing the nodejs app.
+	Build(base, s string) (v1.Image, error)
 }

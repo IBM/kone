@@ -39,7 +39,7 @@ func TestGoBuildIsSupportedRef(t *testing.T) {
 
 	// Supported import paths.
 	for _, importpath := range []string{
-		filepath.FromSlash("github.com/google/ko/cmd/ko"), // ko can build itself.
+		filepath.FromSlash("github.com/ibm/kone/cmd/ko"), // ko can build itself.
 	} {
 		t.Run(importpath, func(t *testing.T) {
 			if !ng.IsSupportedReference(importpath) {
@@ -50,8 +50,8 @@ func TestGoBuildIsSupportedRef(t *testing.T) {
 
 	// Unsupported import paths.
 	for _, importpath := range []string{
-		filepath.FromSlash("github.com/google/ko/pkg/build"),       // not a command.
-		filepath.FromSlash("github.com/google/ko/pkg/nonexistent"), // does not exist.
+		filepath.FromSlash("github.com/ibm/kone/pkg/build"),       // not a command.
+		filepath.FromSlash("github.com/ibm/kone/pkg/nonexistent"), // does not exist.
 	} {
 		t.Run(importpath, func(t *testing.T) {
 			if ng.IsSupportedReference(importpath) {
@@ -68,7 +68,7 @@ func TestGoBuildIsSupportedRefWithModules(t *testing.T) {
 	}
 
 	mod := &modInfo{
-		Path: filepath.FromSlash("github.com/google/ko/cmd/ko/test"),
+		Path: filepath.FromSlash("github.com/ibm/kone/cmd/ko/test"),
 		Dir:  ".",
 	}
 
@@ -80,7 +80,7 @@ func TestGoBuildIsSupportedRefWithModules(t *testing.T) {
 
 	// Supported import paths.
 	for _, importpath := range []string{
-		filepath.FromSlash("github.com/google/ko/cmd/ko/test"), // ko can build the test package.
+		filepath.FromSlash("github.com/ibm/kone/cmd/ko/test"), // ko can build the test package.
 	} {
 		t.Run(importpath, func(t *testing.T) {
 			if !ng.IsSupportedReference(importpath) {
@@ -91,9 +91,9 @@ func TestGoBuildIsSupportedRefWithModules(t *testing.T) {
 
 	// Unsupported import paths.
 	for _, importpath := range []string{
-		filepath.FromSlash("github.com/google/ko/pkg/build"),       // not a command.
-		filepath.FromSlash("github.com/google/ko/pkg/nonexistent"), // does not exist.
-		filepath.FromSlash("github.com/google/ko/cmd/ko"),          // not in this module.
+		filepath.FromSlash("github.com/ibm/kone/pkg/build"),       // not a command.
+		filepath.FromSlash("github.com/ibm/kone/pkg/nonexistent"), // does not exist.
+		filepath.FromSlash("github.com/ibm/kone/cmd/ko"),          // not in this module.
 	} {
 		t.Run(importpath, func(t *testing.T) {
 			if ng.IsSupportedReference(importpath) {
@@ -127,7 +127,7 @@ func TestGoBuildNoKoData(t *testing.T) {
 	if err != nil {
 		t.Fatalf("random.Image() = %v", err)
 	}
-	importpath := "github.com/google/ko"
+	importpath := "github.com/ibm/kone"
 
 	creationTime := v1.Time{time.Unix(5000, 0)}
 	ng, err := NewGo(
@@ -207,7 +207,7 @@ func TestGoBuild(t *testing.T) {
 	if err != nil {
 		t.Fatalf("random.Image() = %v", err)
 	}
-	importpath := "github.com/google/ko"
+	importpath := "github.com/ibm/kone"
 
 	creationTime := v1.Time{time.Unix(5000, 0)}
 	ng, err := NewGo(
@@ -327,15 +327,15 @@ func TestGoBuild(t *testing.T) {
 		}
 	})
 
-	// Check that the environment contains the KO_DATA_PATH environment variable.
-	t.Run("check KO_DATA_PATH env var", func(t *testing.T) {
+	// Check that the environment contains the KONE_DATA_PATH environment variable.
+	t.Run("check KONE_DATA_PATH env var", func(t *testing.T) {
 		cfg, err := img.ConfigFile()
 		if err != nil {
 			t.Errorf("ConfigFile() = %v", err)
 		}
 		found := false
 		for _, entry := range cfg.Config.Env {
-			if entry == "KO_DATA_PATH="+kodataRoot {
+			if entry == "KONE_DATA_PATH="+kodataRoot {
 				found = true
 			}
 		}

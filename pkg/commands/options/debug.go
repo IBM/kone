@@ -20,10 +20,7 @@ import (
 
 // DebugOptions holds options to improve debugging containers.
 type DebugOptions struct {
-	DisableOptimizations bool
 }
 
 func AddDebugArg(cmd *cobra.Command, do *DebugOptions) {
-	cmd.Flags().BoolVar(&do.DisableOptimizations, "disable-optimizations", do.DisableOptimizations,
-		"Disable optimizations when building Go code. Useful when you want to interactively debug the created container.")
 }

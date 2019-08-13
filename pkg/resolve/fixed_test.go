@@ -21,8 +21,8 @@ import (
 	"github.com/google/go-containerregistry/pkg/name"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/random"
-	"github.com/google/ko/pkg/build"
-	"github.com/google/ko/pkg/publish"
+	"github.com/ibm/kone/pkg/build"
+	"github.com/ibm/kone/pkg/publish"
 )
 
 var (

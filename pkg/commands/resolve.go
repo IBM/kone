@@ -18,7 +18,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/google/ko/pkg/commands/options"
+	"github.com/ibm/kone/pkg/commands/options"
 	"github.com/spf13/cobra"
 )
 

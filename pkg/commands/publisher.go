@@ -16,53 +16,29 @@ package commands
 
 import (
 	"fmt"
-	gb "go/build"
 
 	"github.com/google/go-containerregistry/pkg/name"
-	"github.com/google/ko/pkg/build"
-	"github.com/google/ko/pkg/publish"
-
-	"golang.org/x/tools/go/packages"
+	"github.com/ibm/kone/pkg/build"
+	"github.com/ibm/kone/pkg/publish"
 )
 
-func qualifyLocalImport(importpath string) (string, error) {
-	cfg := &packages.Config{
-		Mode: packages.NeedName,
-	}
-	pkgs, err := packages.Load(cfg, importpath)
-	if err != nil {
-		return "", err
-	}
-	if len(pkgs) != 1 {
-		return "", fmt.Errorf("found %d local packages, expected 1", len(pkgs))
-	}
-	return pkgs[0].PkgPath, nil
-}
-
-func publishImages(importpaths []string, pub publish.Interface, b build.Interface) (map[string]name.Reference, error) {
+func publishImages(paths []string, pub publish.Interface, b build.Interface) (map[string]name.Reference, error) {
 	imgs := make(map[string]name.Reference)
-	for _, importpath := range importpaths {
-		if gb.IsLocalImport(importpath) {
-			var err error
-			importpath, err = qualifyLocalImport(importpath)
-			if err != nil {
-				return nil, err
-			}
+	for _, path := range paths {
+		packageName := b.IsSupportedReference("", path)
+		if packageName == nil {
+			return nil, fmt.Errorf("path %q is not supported", path)
 		}
 
-		if !b.IsSupportedReference(importpath) {
-			return nil, fmt.Errorf("importpath %q is not supported", importpath)
-		}
-
-		img, err := b.Build(importpath)
+		img, err := b.Build("", path)
 		if err != nil {
-			return nil, fmt.Errorf("error building %q: %v", importpath, err)
+			return nil, fmt.Errorf("error building %q: %v", path, err)
 		}
-		ref, err := pub.Publish(img, importpath)
+		ref, err := pub.Publish(img, *packageName, path)
 		if err != nil {
-			return nil, fmt.Errorf("error publishing %s: %v", importpath, err)
+			return nil, fmt.Errorf("error publishing %s: %v", path, err)
 		}
-		imgs[importpath] = ref
+		imgs[path] = ref
 	}
 	return imgs, nil
 }

@@ -15,6 +15,7 @@
 package build
 
 import (
+	"path/filepath"
 	"sync"
 
 	v1 "github.com/google/go-containerregistry/pkg/v1"
@@ -43,22 +44,24 @@ func NewCaching(inner Interface) (*Caching, error) {
 }
 
 // Build implements Interface
-func (c *Caching) Build(ip string) (v1.Image, error) {
+func (c *Caching) Build(base, dir string) (v1.Image, error) {
 	f := func() *future {
 		// Lock the map of futures.
 		c.m.Lock()
 		defer c.m.Unlock()
 
-		// If a future for "ip" exists, then return it.
-		f, ok := c.results[ip]
+		key := filepath.Join(base, dir)
+
+		// If a future for "dir" exists, then return it.
+		f, ok := c.results[key]
 		if ok {
 			return f
 		}
 		// Otherwise create and record a future for a Build of "ip".
 		f = newFuture(func() (v1.Image, error) {
-			return c.inner.Build(ip)
+			return c.inner.Build(base, dir)
 		})
-		c.results[ip] = f
+		c.results[key] = f
 		return f
 	}()
 
@@ -66,14 +69,15 @@ func (c *Caching) Build(ip string) (v1.Image, error) {
 }
 
 // IsSupportedReference implements Interface
-func (c *Caching) IsSupportedReference(ip string) bool {
-	return c.inner.IsSupportedReference(ip)
+func (c *Caching) IsSupportedReference(base, dir string) *string {
+	return c.inner.IsSupportedReference(base, dir)
 }
 
-// Invalidate removes an import path's cached results.
-func (c *Caching) Invalidate(ip string) {
+// Invalidate removes a path's cached results.
+func (c *Caching) Invalidate(base, dir string) {
 	c.m.Lock()
 	defer c.m.Unlock()
 
-	delete(c.results, ip)
+	key := filepath.Join(base, dir)
+	delete(c.results, key)
 }

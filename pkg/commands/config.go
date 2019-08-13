@@ -57,7 +57,7 @@ func getCreationTime() (*v1.Time, error) {
 
 func init() {
 	// If omitted, use this base image.
-	viper.SetDefault("defaultBaseImage", "gcr.io/distroless/static:latest")
+	viper.SetDefault("defaultBaseImage", "node:lts-slim")
 	viper.SetConfigName(".ko") // .yaml is implicit
 
 	if override := os.Getenv("KO_CONFIG_PATH"); override != "" {

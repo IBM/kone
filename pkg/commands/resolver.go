@@ -21,18 +21,19 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"path/filepath"
 	"sync"
 
 	"github.com/google/go-containerregistry/pkg/authn"
 	"github.com/google/go-containerregistry/pkg/name"
-	"github.com/google/ko/pkg/build"
-	"github.com/google/ko/pkg/commands/options"
-	"github.com/google/ko/pkg/publish"
-	"github.com/google/ko/pkg/resolve"
+	"github.com/ibm/kone/pkg/build"
+	"github.com/ibm/kone/pkg/commands/options"
+	"github.com/ibm/kone/pkg/publish"
+	"github.com/ibm/kone/pkg/resolve"
 	"github.com/mattmoor/dep-notify/pkg/graph"
 )
 
-func gobuildOptions(do *options.DebugOptions) ([]build.Option, error) {
+func nodebuildOptions(do *options.DebugOptions) ([]build.Option, error) {
 	creationTime, err := getCreationTime()
 	if err != nil {
 		return nil, err
@@ -43,14 +44,12 @@ func gobuildOptions(do *options.DebugOptions) ([]build.Option, error) {
 	if creationTime != nil {
 		opts = append(opts, build.WithCreationTime(*creationTime))
 	}
-	if do.DisableOptimizations {
-		opts = append(opts, build.WithDisabledOptimizations())
-	}
+
 	return opts, nil
 }
 
 func makeBuilder(do *options.DebugOptions) (*build.Caching, error) {
-	opt, err := gobuildOptions(do)
+	opt, err := nodebuildOptions(do)
 	if err != nil {
 		log.Fatalf("error setting up builder options: %v", err)
 	}
@@ -140,7 +139,7 @@ func resolveFilesToWriter(builder *build.Caching, publisher publish.Interface, f
 				for _, ip := range value {
 					if ss.Has(ip) {
 						// See the comment above about how "builder" works.
-						builder.Invalidate(ip)
+						builder.Invalidate("", ip) // TODO
 						fs <- key
 					}
 				}
@@ -201,20 +200,20 @@ func resolveFilesToWriter(builder *build.Caching, publisher publish.Interface, f
 					if fo.Watch {
 						lg = log.Printf
 					}
-					lg("error processing import paths in %q: %v", f, err)
+					lg("error processing paths in %q: %v", f, err)
 					return
 				}
-				// Associate with this file the collection of binary import paths.
-				sm.Store(f, recordingBuilder.ImportPaths)
+				// Associate with this file the collection of node app paths
+				sm.Store(f, recordingBuilder.Paths)
 				ch <- b
 				if fo.Watch {
-					for _, ip := range recordingBuilder.ImportPaths {
+					for _, ip := range recordingBuilder.Paths {
 						// Technically we never remove binary targets from the graph,
 						// which will increase our graph's watch load, but the
 						// notifications that they change will result in no affected
 						// yamls, and no new builds or deploys.
 						if err := g.Add(ip); err != nil {
-							log.Fatalf("Error adding importpath to dep graph: %v", err)
+							log.Fatalf("Error adding path to dep graph: %v", err)
 						}
 					}
 				}
@@ -240,10 +239,16 @@ func resolveFilesToWriter(builder *build.Caching, publisher publish.Interface, f
 }
 
 func resolveFile(f string, builder build.Interface, pub publish.Interface, so *options.SelectorOptions) (b []byte, err error) {
+	var basepath = ""
 	if f == "-" {
 		b, err = ioutil.ReadAll(os.Stdin)
+		basepath, err = os.Getwd()
+		if err != nil {
+			return nil, err
+		}
 	} else {
 		b, err = ioutil.ReadFile(f)
+		basepath = filepath.Dir(f)
 	}
 	if err != nil {
 		return nil, err
@@ -256,5 +261,5 @@ func resolveFile(f string, builder build.Interface, pub publish.Interface, so *o
 		}
 	}
 
-	return resolve.ImageReferences(b, builder, pub)
+	return resolve.ImageReferences(basepath, b, builder, pub)
 }

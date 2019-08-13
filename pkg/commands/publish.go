@@ -18,7 +18,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/google/ko/pkg/commands/options"
+	"github.com/ibm/kone/pkg/commands/options"
 	"github.com/spf13/cobra"
 )
 
@@ -30,34 +30,16 @@ func addPublish(topLevel *cobra.Command) {
 	do := &options.DebugOptions{}
 
 	publish := &cobra.Command{
-		Use:   "publish IMPORTPATH...",
-		Short: "Build and publish container images from the given importpaths.",
-		Long:  `This sub-command builds the provided import paths into Go binaries, containerizes them, and publishes them.`,
+		Use:   "publish PATH...",
+		Short: "Build and publish container images from the given paths.",
+		Long:  `This sub-command containeres the provided nodejs paths and publishes them.`,
 		Example: `
-  # Build and publish import path references to a Docker
+  # Publish nodejs app to a Docker
   # Registry as:
-  #   ${KO_DOCKER_REPO}/<package name>-<hash of import path>
+  #   ${KO_DOCKER_REPO}/<package name>-<hash of package name>
   # When KO_DOCKER_REPO is ko.local, it is the same as if
-  # --local and --preserve-import-paths were passed.
-  ko publish github.com/foo/bar/cmd/baz github.com/foo/bar/cmd/blah
-
-  # Build and publish a relative import path as:
-  #   ${KO_DOCKER_REPO}/<package name>-<hash of import path>
-  # When KO_DOCKER_REPO is ko.local, it is the same as if
-  # --local and --preserve-import-paths were passed.
-  ko publish ./cmd/blah
-
-  # Build and publish a relative import path as:
-  #   ${KO_DOCKER_REPO}/<import path>
-  # When KO_DOCKER_REPO is ko.local, it is the same as if
-  # --local was passed.
-  ko publish --preserve-import-paths ./cmd/blah
-
-  # Build and publish import path references to a Docker
-  # daemon as:
-  #   ko.local/<import path>
-  # This always preserves import paths.
-  ko publish --local github.com/foo/bar/cmd/baz github.com/foo/bar/cmd/blah`,
+  # --local were passed.
+  ko publish ./my-app`,
 		Args: cobra.MinimumNArgs(1),
 		Run: func(_ *cobra.Command, args []string) {
 			builder, err := makeBuilder(do)
