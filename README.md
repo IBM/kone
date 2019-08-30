@@ -2,10 +2,9 @@
 
 `kone` is a tool for building and deploying nodejs applications to Kubernetes.
 
-`kone` is basically [`ko`](https://github.com/google/ko) but for node.js instead of go.
+`kone` is basically [`ko`](https://github.com/google/ko) for Node.js.
 
-Status: apply/resolve are working. The doc hasn't been updated much so expect lots of references to go code
-
+Status: apply/resolve are working.
 
 ## Installation
 
@@ -25,7 +24,7 @@ go get -u github.com/ibm/kone/cmd/kone
 
 **One of the goals of `kone` is to make containers invisible infrastructure.**
 Simply replace image references in your Kubernetes yaml with the path for
-your node.js application, and `kone` will handle containerizing and publishing that
+your Node.js application, and `kone` will handle containerizing and publishing that
 container image as needed.
 
 For example, you might use the following in a Kubernetes `Deployment` resource:
@@ -47,7 +46,7 @@ spec:
     spec:
       containers:
       - name: hello-world
-        # This is the relative (to this file) path for the node.js application containerize and run.
+        # This is the relative path for the Node.js application to containerize and run.
         image: ../my-node-app
         ports:
         - containerPort: 8080
@@ -55,15 +54,13 @@ spec:
 
 ### Determining supported node app
 
-`kone` looks for `package.json` under the path specified in the YAML file
+`kone` looks for `package.json` under the path specified in the YAML file.
+Relative paths are resolved from the YAML file location.
 
 ### Results
 
 Employing this convention enables `kone` to have effectively zero configuration
-and enable very fast development iteration. For
-[warm-image](https://github.com/mattmoor/warm-image), `kone` is able to containerize,
-and redeploy a non-trivial Kubernetes controller app in
-seconds.
+and enable very fast development iteration.
 
 ## Usage
 
@@ -75,7 +72,6 @@ However, these same commands can be directed to operate locally as well via
 the `--local` or `-L` command (or setting `KO_DOCKER_REPO=ko.local`).  See
 the [`minikube` section](./README.md#with-minikube) for more detail.
 
-
 ### `kone publish`
 
 `kone publish` simply builds and publishes images for each path passed as
@@ -83,11 +79,23 @@ an argument. It prints the images' published digests after each image is publish
 
 ```shell
 $ kone publish ./nodejs
+2019/08/13 16:46:38 Using base index.docker.io/library/node:lts-slim for ./nodejs
+2019/08/13 16:46:39 Publishing index.docker.io/villardl/filter-dispatcher-197beaeba3358032d029cb68f14adaf6:latest
+2019/08/13 16:46:39 mounted blob: sha256:93f92d87eaa35181f944eee8bf9e240c09fd5b21b78ee865dd77676f5d646e9d
+2019/08/13 16:46:39 mounted blob: sha256:a9d2af5037827579dd8de01460594e7ccaceff88a1381abf7e092f2f68329e31
+2019/08/13 16:46:39 mounted blob: sha256:0a4690c5d889e116874bf45dc757b515565a3bd9b0f6c04054d62280bb4f4ecf
+2019/08/13 16:46:39 mounted blob: sha256:68e3f078a91d377648dce9ab8f6a2fcf38164be1cc52eb1a6b4d9b633260cd79
+2019/08/13 16:46:39 mounted blob: sha256:0cde646bed8c17ceb3ca87cdf65c9d25edfb803d0802fcac62f86b1e55d568e5
+2019/08/13 16:46:39 existing blob: sha256:e4c49295e9e249983b0adee0ff7a643ee4248115d1245870b215d8ded74ef553
+2019/08/13 16:46:40 pushed blob: sha256:5a0f660db6333b9bb7e46cf31a110741b97ab6c23c977e5e22b7f96cbbcf69a7
+2019/08/13 16:46:40 index.docker.io/villardl/filter-dispatcher-197beaeba3358032d029cb68f14adaf6:latest: digest: sha256:798e1d12b44c5cae81d8b36c913461299b19248b2ddd1fb206c882fef44c5939 size: 1242
+2019/08/13 16:46:40 Published index.docker.io/villardl/filter-dispatcher-197beaeba3358032d029cb68f14adaf6@sha256:798e1d12b44c5cae81d8b36c913461299b19248b2ddd1fb206c882fef44c5939
+index.docker.io/villardl/filter-dispatcher-197beaeba3358032d029cb68f14adaf6@sha256:798e1d12b44c5cae81d8b36c913461299b19248b2ddd1fb206c882fef44c5939
 ```
 
 ### `kone resolve`
 
-`kobe resolve` takes Kubernetes yaml files in the style of `kubectl apply`
+`kone resolve` takes Kubernetes yaml files in the style of `kubectl apply`
 and (based on the [model above](#the-kone-model)) determines the set of
 paths to containerize, and publish.
 
@@ -97,8 +105,7 @@ this would be:
 
 ```shell
 # Command
-export PROJECT_ID=$(gcloud config get-value core/project)
-export KO_DOCKER_REPO="gcr.io/${PROJECT_ID}"
+export KO_DOCKER_REPO="docker.io/<your-id>"
 ko resolve -f deployment.yaml
 
 # Output
@@ -113,7 +120,7 @@ spec:
       containers:
       - name: hello-world
         # This is the digest of the published image containing the go binary.
-        image: docker.id/your-ir/nodejs-7c548556363cce7a34e00a8bd34e2580:85ae1f3ae81e2da9887a79e7048dd907f20e5246ba6b7c075db1ad5f789f7049
+        image: docker.id/your-id/filter-dispatcher-197beaeba3358032d029cb68f14adaf6@sha256:5755af3776d9dbf206f1d9d29e0319887771e2c0e4c58e469d4a55b88d89de51
         ports:
         - containerPort: 8080
 ```
@@ -128,7 +135,7 @@ See [the documentation on Kubernetes selectors](https://kubernetes.io/docs/conce
 
 ### `kone apply`
 
-`kobe apply` is intended to parallel `kubectl apply`, but acts on the same
+`kone apply` is intended to parallel `kubectl apply`, but acts on the same
 resolved output as `kone resolve` emits. It is expected that `kone apply` will act
 as the vehicle for rapid iteration during development. As changes are made to a
 particular application, you can run: `kone apply -f unit.yaml` to rapidly
@@ -139,12 +146,12 @@ to whatever `kubectl` context is active.
 
 ### `kone delete`
 
-`kobe delete` simply passes through to `kubectl delete`. It is exposed purely out
+`kone delete` simply passes through to `kubectl delete`. It is exposed purely out
 of convenience for cleaning up resources created through `kone apply`.
 
 ### `kone version`
 
-`kone version` prints version of ko. For not released binaries it will print hash of latest commit in current git tree.
+`kone version` prints version of kone. For not released binaries it will print hash of latest commit in current git tree.
 
 ## With `minikube`
 
@@ -166,23 +173,22 @@ kubectl config use-context minikube
 kone apply -L -f config/
 
 # This is the same as above.
-KO_DOCKER_REPO=ko.local ko apply -f config/
+KO_DOCKER_REPO=ko.local kone apply -f config/
 ```
 
 A caveat of this approach is that it will not work if your container is
 configured with `imagePullPolicy: Always` because despite having the image
 locally, a pull is performed to ensure we have the latest version, it still
 exists, and that access hasn't been revoked. A workaround for this is to
-use `imagePullPolicy: IfNotPresent`, which should work well with `ko` in
+use `imagePullPolicy: IfNotPresent`, which should work well with `kone` in
 all contexts.
 
 Images will appear in the Docker daemon as `ko.local/import.path.com/foo/cmd/bar`.
-With `--local` import paths are always preserved (see `--preserve-import-paths`).
 
 ## Configuration via `.ko.yaml`
 
 While `ko` aims to have zero configuration, there are certain scenarios where
-you will want to override `ko`'s default behavior. This is done via `.ko.yaml`.
+you will want to override `kone`'s default behavior. This is done via `.ko.yaml`.
 
 `.ko.yaml` is put into the directory from which `kone` will be invoked. One can
 override the directory with the `KO_CONFIG_PATH` environment variable.
@@ -219,23 +225,22 @@ using their own docker repository and cluster.
 
 ## Including static assets
 
-`kone` incluses all assets in your node root directory.
+`kone` includes all assets in your node root directory.
 
-A question that often
 ## Enable Autocompletion
 
 To generate an bash completion script, you can run:
 ```
-ko completion
+kone completion
 ```
 
 To use the completion script, you can copy the script in your bash_completion directory (e.g. /usr/local/etc/bash_completion.d/):
 ```
-ko completion > /usr/local/etc/bash_completion.d/ko
+kone completion > /usr/local/etc/bash_completion.d/kone
 ```
  or source it in your shell by running:
 ```
-source <(ko completion)
+source <(kone completion)
 ```
 
 ## Relevance to Release Management
@@ -247,7 +252,7 @@ generated via:
 
 ```shell
 export KO_DOCKER_REPO="docker.io/<your-id>"
-ko resolve -f config/ > release.yaml
+kone resolve -f config/ > release.yaml
 ```
 
 This will publish all of the components as container images to
