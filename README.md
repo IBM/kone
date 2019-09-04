@@ -4,11 +4,11 @@
 
 `kone` is basically [`ko`](https://github.com/google/ko) for Node.js.
 
-Status: apply/resolve are working.
+Disclaimer: this is a prototype. Use at your own risk. 
 
 ## Installation
 
-`kone` can be installed via:
+You need to have `go`. Then `kone` can be installed via:
 
 ```shell
 go get github.com/ibm/kone/cmd/kone
