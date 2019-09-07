@@ -30,7 +30,7 @@ type slowpublish struct {
 // slowpublish implements Interface
 var _ Interface = (*slowpublish)(nil)
 
-func (sb *slowpublish) Publish(img v1.Image, ref string) (name.Reference, error) {
+func (sb *slowpublish) Publish(img v1.Image, packageName string, filepath string) (name.Reference, error) {
 	time.Sleep(sb.sleep)
 	return makeRef()
 }
@@ -51,7 +51,7 @@ func TestCaching(t *testing.T) {
 		img, _ := random.Image(256, 8)
 
 		start := time.Now()
-		ref1, err := cb.Publish(img, ref)
+		ref1, err := cb.Publish(img, "package", ref)
 		if err != nil {
 			t.Errorf("Publish() = %v", err)
 		}
@@ -69,7 +69,7 @@ func TestCaching(t *testing.T) {
 		previousDigest = d1
 
 		start = time.Now()
-		ref2, err := cb.Publish(img, ref)
+		ref2, err := cb.Publish(img, "package", ref)
 		if err != nil {
 			t.Errorf("Publish() = %v", err)
 		}

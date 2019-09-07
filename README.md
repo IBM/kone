@@ -1,4 +1,4 @@
-# kone
+# kone [![Build Status](https://travis-ci.com/IBM/kone.svg?branch=master)](https://travis-ci.com/IBM/kone)
 
 `kone` is a tool for building and deploying nodejs applications to Kubernetes.
 
@@ -56,6 +56,12 @@ spec:
 
 `kone` looks for `package.json` under the path specified in the YAML file.
 Relative paths are resolved from the YAML file location.
+
+`kone` also looks for `main.js` which is used as the docker entry point:
+
+```sh
+ENTRYPOINT ["node", "main.js"]
+```
 
 ### Results
 
@@ -197,12 +203,12 @@ If neither is present, then `kone` will rely on its default behaviors.
 
 ### Overriding the default base image
 
-By default, `kone` makes use of `docker.io/node:lts` as the base image
+By default, `kone` makes use of `docker.io/node/node:lts-slim` as the base image
 for containers. There are a wide array of scenarios in which overriding this
 makes sense, for example:
 1. Pinning to a particular digest of this image for repeatable builds,
 1. Replacing this streamlined base image with another with better debugging
-  tools (e.g. a shell, like `docker.io/library/ubuntu`).
+  tools (e.g. a shell, like `docker.io/node/node:lts`).
 
 The default base image `kone` uses can be changed by simply adding the following
 line to `.ko.yaml`:

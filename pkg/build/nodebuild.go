@@ -230,28 +230,6 @@ func (g *gobuild) tarData(src, dst string) (*bytes.Buffer, error) {
 func (gb *gobuild) Build(basedir, s string) (v1.Image, error) {
 	var layers []mutate.Addendum
 
-	// No need for kodata
-	// // Create a layer from the kodata directory under this import path.
-	// dataLayerBuf, err := gb.tarKoData(s)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// dataLayerBytes := dataLayerBuf.Bytes()
-	// dataLayer, err := tarball.LayerFromOpener(func() (io.ReadCloser, error) {
-	// 	return ioutil.NopCloser(bytes.NewBuffer(dataLayerBytes)), nil
-	// })
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// layers = append(layers, mutate.Addendum{
-	// 	Layer: dataLayer,
-	// 	History: v1.History{
-	// 		Author:    "kone",
-	// 		CreatedBy: "kone publish " + s,
-	// 		Comment:   "konedata contents, at $KONE_DATA_PATH",
-	// 	},
-	// })
-
 	// target app path
 	appPath := filepath.Join(appDir, appFilename(s))
 

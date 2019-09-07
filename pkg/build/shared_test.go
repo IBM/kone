@@ -29,11 +29,12 @@ type slowbuild struct {
 // slowbuild implements Interface
 var _ Interface = (*slowbuild)(nil)
 
-func (sb *slowbuild) IsSupportedReference(string) bool {
-	return true
+func (sb *slowbuild) IsSupportedReference(string, string) *string {
+	ref := "/package.json"
+	return &ref
 }
 
-func (sb *slowbuild) Build(string) (v1.Image, error) {
+func (sb *slowbuild) Build(base, s string) (v1.Image, error) {
 	time.Sleep(sb.sleep)
 	return random.Image(256, 8)
 }
@@ -45,7 +46,7 @@ func TestCaching(t *testing.T) {
 	sb := &slowbuild{duration}
 	cb, _ := NewCaching(sb)
 
-	if !cb.IsSupportedReference(ip) {
+	if cb.IsSupportedReference(ip, "") == nil {
 		t.Errorf("ISR(%q) = false, wanted true", ip)
 	}
 
@@ -55,7 +56,7 @@ func TestCaching(t *testing.T) {
 	// cache and iterate.
 	for idx := 0; idx < 3; idx++ {
 		start := time.Now()
-		img1, err := cb.Build(ip)
+		img1, err := cb.Build(ip, "")
 		if err != nil {
 			t.Errorf("Build() = %v", err)
 		}
@@ -73,7 +74,7 @@ func TestCaching(t *testing.T) {
 		previousDigest = d1
 
 		start = time.Now()
-		img2, err := cb.Build(ip)
+		img2, err := cb.Build(ip, "")
 		if err != nil {
 			t.Errorf("Build() = %v", err)
 		}
@@ -89,6 +90,6 @@ func TestCaching(t *testing.T) {
 			t.Error("Got different images, wanted same")
 		}
 
-		cb.Invalidate(ip)
+		cb.Invalidate(ip, "")
 	}
 }
