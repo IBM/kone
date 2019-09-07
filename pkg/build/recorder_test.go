@@ -15,107 +15,22 @@
 package build
 
 import (
-	"testing"
-
 	v1 "github.com/google/go-containerregistry/pkg/v1"
-
-	"github.com/google/go-cmp/cmp"
 )
 
 type fake struct {
-	isr func(string) bool
+	isr func(string, string) *string
 	b   func(string) (v1.Image, error)
 }
 
 var _ Interface = (*fake)(nil)
 
 // IsSupportedReference implements Interface
-func (r *fake) IsSupportedReference(ip string) bool {
-	return r.isr(ip)
+func (r *fake) IsSupportedReference(ip string, dir string) *string {
+	return r.isr(ip, dir)
 }
 
 // Build implements Interface
-func (r *fake) Build(ip string) (v1.Image, error) {
+func (r *fake) Build(ip string, s string) (v1.Image, error) {
 	return r.b(ip)
-}
-
-func TestISRPassThrough(t *testing.T) {
-	tests := []struct {
-		name  string
-		input string
-	}{{
-		name: "empty string",
-	}, {
-		name:  "non-empty string",
-		input: "asdf asdf asdf",
-	}}
-
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			called := false
-			inner := &fake{
-				isr: func(ip string) bool {
-					called = true
-					if ip != test.input {
-						t.Errorf("ISR = %v, wanted %v", ip, test.input)
-					}
-					return true
-				},
-			}
-			rec := &Recorder{
-				Builder: inner,
-			}
-			rec.IsSupportedReference(test.input)
-			if !called {
-				t.Error("IsSupportedReference wasn't called, wanted called")
-			}
-		})
-	}
-}
-
-func TestBuildRecording(t *testing.T) {
-	tests := []struct {
-		name   string
-		inputs []string
-	}{{
-		name: "no calls",
-	}, {
-		name: "one call",
-		inputs: []string{
-			"github.com/foo/bar",
-		},
-	}, {
-		name: "two calls",
-		inputs: []string{
-			"github.com/foo/bar",
-			"github.com/foo/baz",
-		},
-	}, {
-		name: "duplicates",
-		inputs: []string{
-			"github.com/foo/bar",
-			"github.com/foo/baz",
-			"github.com/foo/bar",
-			"github.com/foo/baz",
-		},
-	}}
-
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			inner := &fake{
-				b: func(ip string) (v1.Image, error) {
-					return nil, nil
-				},
-			}
-			rec := &Recorder{
-				Builder: inner,
-			}
-			for _, in := range test.inputs {
-				rec.Build(in)
-			}
-			if diff := cmp.Diff(test.inputs, rec.ImportPaths); diff != "" {
-				t.Errorf("Build (-want, +got): %s", diff)
-			}
-		})
-	}
 }
