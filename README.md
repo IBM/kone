@@ -4,7 +4,7 @@
 
 `kone` is basically [`ko`](https://github.com/google/ko) for Node.js.
 
-Disclaimer: this is a prototype. Use at your own risk. 
+Disclaimer: this is a prototype. Use at your own risk.
 
 ## Installation
 
@@ -57,11 +57,11 @@ spec:
 `kone` looks for `package.json` under the path specified in the YAML file.
 Relative paths are resolved from the YAML file location.
 
-`kone` also looks for `main.js` which is used as the docker entry point:
+If found, `kone` checks:
+- the package name is set in `package.json` and use it as base image name
+- `main.js` exists, and use it as the docker entry point `ENTRYPOINT ["node", "main.js"]`
 
-```sh
-ENTRYPOINT ["node", "main.js"]
-```
+If one of the conditions is not met, `kone` skips the package.
 
 ### Results
 

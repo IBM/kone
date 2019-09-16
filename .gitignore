@@ -1,3 +1,2 @@
-# Ignore GoLand (IntelliJ) files.
 .idea/
-
+.history
