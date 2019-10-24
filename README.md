@@ -126,7 +126,7 @@ spec:
       containers:
       - name: hello-world
         # This is the digest of the published image containing the go binary.
-        image: docker.id/your-id/filter-dispatcher-197beaeba3358032d029cb68f14adaf6@sha256:5755af3776d9dbf206f1d9d29e0319887771e2c0e4c58e469d4a55b88d89de51
+        image: docker.id/your-id/filter-dispatcher@sha256:5755af3776d9dbf206f1d9d29e0319887771e2c0e4c58e469d4a55b88d89de51
         ports:
         - containerPort: 8080
 ```
@@ -215,6 +215,21 @@ line to `.ko.yaml`:
 
 ```yaml
 defaultBaseImage: docker.io/node/node:<another-tag>
+```
+
+# Overriding the base for particular package
+
+Some of your node packages may have requirements that are a more unique,
+and you may want to direct `kone` to use a particular base image for just those packages.
+
+The base image `kone` uses can be changed by adding the following to `package.json`:
+
+```json
+{
+  "kone": {
+    "defaultBaseImage": "github.com/my-org/my-repo/path/to/binary: docker.io/another/base:latest"
+  }
+}
 ```
 
 ### Why isn't `KO_DOCKER_REPO` part of `.ko.yaml`?

@@ -37,7 +37,7 @@ const (
 )
 
 // GetBase takes an filepath and returns a base v1.Image.
-type GetBase func(string) (v1.Image, error)
+type GetBase func(string, string) (v1.Image, error)
 type builder func(string, string) (string, error)
 
 type gobuild struct {
@@ -255,7 +255,7 @@ func (gb *gobuild) Build(basedir, s string) (v1.Image, error) {
 	})
 
 	// Determine the appropriate base image for this filepath
-	base, err := gb.getBase(s)
+	base, err := gb.getBase(basedir, s)
 	if err != nil {
 		return nil, err
 	}

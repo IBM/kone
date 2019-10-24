@@ -15,9 +15,12 @@
 package commands
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
+	"path/filepath"
 	"strconv"
 	"time"
 
@@ -29,15 +32,36 @@ import (
 )
 
 var (
-	defaultBaseImage   name.Reference
-	baseImageOverrides map[string]name.Reference
+	defaultBaseImage name.Reference
 )
 
-func getBaseImage(s string) (v1.Image, error) {
-	ref, ok := baseImageOverrides[s]
-	if !ok {
-		ref = defaultBaseImage
+type Package struct {
+	Kone KoneOptions `json:"kone"`
+}
+
+type KoneOptions struct {
+	DefaultBaseImage string `json:"defaultBaseImage"`
+}
+
+func getBaseImage(baseDir, s string) (v1.Image, error) {
+	ref := defaultBaseImage
+
+	appPath := filepath.Join(baseDir, s, "package.json")
+	raw, err := ioutil.ReadFile(appPath)
+
+	if err == nil {
+		var pkg = Package{}
+		err = json.Unmarshal(raw, &pkg)
+		if err == nil || pkg.Kone.DefaultBaseImage != "" {
+			newref, ok := name.ParseReference(pkg.Kone.DefaultBaseImage)
+			if ok != nil {
+				log.Printf("error parsing %q as image reference: %v", ref, ok)
+			} else {
+				ref = newref
+			}
+		}
 	}
+
 	log.Printf("Using base %s for %s", ref, s)
 	return remote.Image(ref, remote.WithAuthFromKeychain(authn.DefaultKeychain))
 }
@@ -78,14 +102,4 @@ func init() {
 		log.Fatalf("'defaultBaseImage': error parsing %q as image reference: %v", ref, err)
 	}
 	defaultBaseImage = dbi
-
-	baseImageOverrides = make(map[string]name.Reference)
-	overrides := viper.GetStringMapString("baseImageOverrides")
-	for k, v := range overrides {
-		bi, err := name.ParseReference(v)
-		if err != nil {
-			log.Fatalf("'baseImageOverrides': error parsing %q as image reference: %v", v, err)
-		}
-		baseImageOverrides[k] = bi
-	}
 }
