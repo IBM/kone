@@ -15,48 +15,34 @@
 package options
 
 import (
-	"crypto/md5"
-	"encoding/hex"
-	"path/filepath"
-
 	"github.com/ibm/kone/pkg/publish"
 	"github.com/spf13/cobra"
 )
 
-// NameOptions represents options for the ko binary.
+// NameOptions represents options for the kone binary.
 type NameOptions struct {
-	// PreserveImportPaths preserves the full import path after KO_DOCKER_REPO.
-	PreserveImportPaths bool
-	// BaseImportPaths uses the base path without MD5 hash after KO_DOCKER_REPO.
-	BaseImportPaths bool
+	// PreservePackageName preserves the package name after KO_DOCKER_REPO, whithout MD5 hash
+	// PreservePackageName bool
 }
 
 func AddNamingArgs(cmd *cobra.Command, no *NameOptions) {
-	// cmd.Flags().BoolVarP(&no.PreserveImportPaths, "preserve-import-paths", "P", no.PreserveImportPaths,
-	// 	"Whether to preserve the full import path after KO_DOCKER_REPO.")
-	// cmd.Flags().BoolVarP(&no.BaseImportPaths, "base-import-paths", "B", no.BaseImportPaths,
-	// 	"Whether to use the base path without MD5 hash after KO_DOCKER_REPO.")
+	//cmd.Flags().BoolVarP(&no.PreservePackageName, "preserve-package-name", "P", no.PreservePackageName,
+	//	"Whether to preserve the package name after KO_DOCKER_REPO.")
 }
 
-func packageWithMD5(packageName string) string {
-	hasher := md5.New()
-	hasher.Write([]byte(packageName))
-	return filepath.Base(packageName) + "-" + hex.EncodeToString(hasher.Sum(nil))
-}
+// func packageWithMD5(packageName string) string {
+// 	hasher := md5.New()
+// 	hasher.Write([]byte(packageName))
+// 	return filepath.Base(packageName) + "-" + hex.EncodeToString(hasher.Sum(nil))
+// }
 
-func preserveImportPath(importpath string) string {
-	return importpath
-}
-
-func baseImportPaths(importpath string) string {
-	return filepath.Base(importpath)
+func preservePackageName(packageName string) string {
+	return packageName
 }
 
 func MakeNamer(no *NameOptions) publish.Namer {
-	if no.PreserveImportPaths {
-		return preserveImportPath
-	} else if no.BaseImportPaths {
-		return baseImportPaths
-	}
-	return packageWithMD5
+	//	if no.PreservePackageName {
+	return preservePackageName
+	// }
+	//	return packageWithMD5
 }

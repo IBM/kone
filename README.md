@@ -193,7 +193,7 @@ Images will appear in the Docker daemon as `ko.local/import.path.com/foo/cmd/bar
 
 ## Configuration via `.ko.yaml`
 
-While `ko` aims to have zero configuration, there are certain scenarios where
+While `kone` aims to have zero configuration, there are certain scenarios where
 you will want to override `kone`'s default behavior. This is done via `.ko.yaml`.
 
 `.ko.yaml` is put into the directory from which `kone` will be invoked. One can
